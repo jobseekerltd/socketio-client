@@ -4,7 +4,7 @@ require 'SocketIO'
 
 Gem::Specification.new do |s|
   s.name        = "socketio-client"
-  s.version     = SocketIO::Client::VERSION
+  s.version     = "0.0.4"
   s.authors     = ["Lyon"]
   s.email       = ["lyon@delorum.com"]
   s.homepage    = "http://github.com/lyondhill/socket.io-ruby-client"
