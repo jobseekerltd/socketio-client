@@ -25,7 +25,7 @@ class WebSocket
     class Error < RuntimeError
 
     end
-    
+
     WEB_SOCKET_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
     OPCODE_CONTINUATION = 0x00
     OPCODE_TEXT = 0x01
@@ -66,7 +66,7 @@ class WebSocket
         @handshaked = false
 
       else # client
-        
+
         @web_socket_version = "hixie-76"
         uri = arg.is_a?(String) ? URI.parse(arg) : arg
 
@@ -166,20 +166,19 @@ class WebSocket
       end
       case @web_socket_version
         when "hixie-75", "hixie-76"
-          data = force_encoding(data.dup(), "ASCII-8BIT")
-          write("\x00#{data}\xff")
+          write("\x00#{data}\xff".force_encoding("ASCII-8BIT"))
           flush()
         else
           send_frame(OPCODE_TEXT, data, !@server)
       end
     end
-    
+
     def receive()
       if !@handshaked
         raise(WebSocket::Error, "call WebSocket\#handshake first")
       end
       case @web_socket_version
-        
+
         when "hixie-75", "hixie-76"
           #packet = gets("\xff")
           packet = gets(force_encoding("\xff", "ASCII-8BIT"))
@@ -192,7 +191,7 @@ class WebSocket
           else
             raise(WebSocket::Error, "input must be either '\\x00...\\xff' or '\\xff\\x00'")
           end
-        
+
         else
           begin
             bytes = read(2).unpack("C*")
@@ -233,10 +232,10 @@ class WebSocket
           rescue EOFError
             return nil
           end
-        
+
       end
     end
-    
+
     def tcp_socket
       return @socket
     end
@@ -262,7 +261,7 @@ class WebSocket
     def location
       return "ws://#{self.host}#{@path}"
     end
-    
+
     # Does closing handshake.
     def close(code = 1005, reason = "", origin = :self)
       if !@closing_started
@@ -281,7 +280,7 @@ class WebSocket
       @socket.close() if origin == :peer
       @closing_started = true
     end
-    
+
     def close_socket()
       @socket.close()
     end
@@ -361,11 +360,11 @@ class WebSocket
     def flush()
       @socket.flush()
     end
-    
+
     def write_byte(buffer, byte)
       buffer.write([byte].pack("C"))
     end
-    
+
     def security_digest(key)
       return Base64.encode64(Digest::SHA1.digest(key + WEB_SOCKET_GUID)).gsub(/\n/, "")
     end
