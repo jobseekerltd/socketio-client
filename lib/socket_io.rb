@@ -1,4 +1,4 @@
-require 'web_socket'
+require 'socket_io/web_socket'
 require 'rest_client'
 require 'json'
 require 'parser'
@@ -56,7 +56,7 @@ module SocketIO
     def connect_transport
       if @supported_transports.include? "websocket"
         scheme = @uri.scheme == "https" ? "wss" : "ws"
-        @transport = WebSocket.new("#{scheme}://#{@uri.host}:#{@uri.port}/socket.io/1/websocket/#{@session_id}", origin: @uri.to_s)
+        @transport = SocketIO::WebSocket.new("#{scheme}://#{@uri.host}:#{@uri.port}/socket.io/1/websocket/#{@session_id}", origin: @uri.to_s)
       else
         raise "We only support WebSockets.. and this server doesnt like web sockets.. O NO!!"
       end
