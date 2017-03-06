@@ -14,7 +14,8 @@ require "openssl"
 require "stringio"
 
 
-class WebSocket
+module SocketIO
+  class WebSocket
 
     class << self
 
@@ -41,7 +42,7 @@ class WebSocket
         @socket = arg
         line = gets().chomp()
         if !(line =~ /\AGET (\S+) HTTP\/1.1\z/n)
-          raise(WebSocket::Error, "invalid request: #{line}")
+          raise(SocketIO::WebSocket::Error, "invalid request: #{line}")
         end
         @path = $1
         read_header()
@@ -56,7 +57,7 @@ class WebSocket
           @key3 = nil
         end
         if !@server.accepted_origin?(self.origin)
-          raise(WebSocket::Error,
+          raise(SocketIO::WebSocket::Error,
             ("Unaccepted origin: %s (server.accepted_domains = %p)\n\n" +
               "To accept this origin, write e.g. \n" +
               "  WebSocketServer.new(..., :accepted_domains => [%p]), or\n" +
@@ -75,7 +76,7 @@ class WebSocket
         elsif uri.scheme = "wss"
           default_port = 443
         else
-          raise(WebSocket::Error, "unsupported scheme: #{uri.scheme}")
+          raise(SocketIO::WebSocket::Error, "unsupported scheme: #{uri.scheme}")
         end
 
         @path = (uri.path.empty? ? "/" : uri.path) + (uri.query ? "?" + uri.query : "")
@@ -106,16 +107,16 @@ class WebSocket
         flush()
 
         line = gets().chomp()
-        raise(WebSocket::Error, "bad response: #{line}") if !(line =~ /\AHTTP\/1.1 101 /n)
+        raise(SocketIO::WebSocket::Error, "bad response: #{line}") if !(line =~ /\AHTTP\/1.1 101 /n)
         read_header()
         if (@header["sec-websocket-origin"] || "").downcase() != origin.downcase()
-          raise(WebSocket::Error,
+          raise(SocketIO::WebSocket::Error,
             "origin doesn't match: '#{@header["sec-websocket-origin"]}' != '#{origin}'")
         end
         reply_digest = read(16)
         expected_digest = hixie_76_security_digest(key1, key2, key3)
         if reply_digest != expected_digest
-          raise(WebSocket::Error,
+          raise(SocketIO::WebSocket::Error,
             "security digest doesn't match: %p != %p" % [reply_digest, expected_digest])
         end
         @handshaked = true
@@ -130,7 +131,7 @@ class WebSocket
 
     def handshake(status = nil, header = {})
       if @handshaked
-        raise(WebSocket::Error, "handshake has already been done")
+        raise(SocketIO::WebSocket::Error, "handshake has already been done")
       end
       status ||= "101 Switching Protocols"
       def_header = {}
@@ -162,7 +163,7 @@ class WebSocket
 
     def send(data)
       if !@handshaked
-        raise(WebSocket::Error, "call WebSocket\#handshake first")
+        raise(SocketIO::WebSocket::Error, "call WebSocket\#handshake first")
       end
       case @web_socket_version
         when "hixie-75", "hixie-76"
@@ -175,7 +176,7 @@ class WebSocket
 
     def receive()
       if !@handshaked
-        raise(WebSocket::Error, "call WebSocket\#handshake first")
+        raise(SocketIO::WebSocket::Error, "call WebSocket\#handshake first")
       end
       case @web_socket_version
 
@@ -189,7 +190,7 @@ class WebSocket
             close(1005, "", :peer)
             return nil
           else
-            raise(WebSocket::Error, "input must be either '\\x00...\\xff' or '\\xff\\x00'")
+            raise(SocketIO::WebSocket::Error, "input must be either '\\x00...\\xff' or '\\xff\\x00'")
           end
 
         else
@@ -210,7 +211,7 @@ class WebSocket
             if @server && !mask
               # Masking is required.
               @socket.close()
-              raise(WebSocket::Error, "received unmasked data")
+              raise(SocketIO::WebSocket::Error, "received unmasked data")
             end
             mask_key = mask ? read(4).unpack("C*") : nil
             payload = read(plength)
@@ -219,15 +220,15 @@ class WebSocket
               when OPCODE_TEXT
                 return force_encoding(payload, "UTF-8")
               when OPCODE_BINARY
-                raise(WebSocket::Error, "received binary data, which is not supported")
+                raise(SocketIO::WebSocket::Error, "received binary data, which is not supported")
               when OPCODE_CLOSE
                 close(1005, "", :peer)
                 return nil
               when OPCODE_PING
-                raise(WebSocket::Error, "received ping, which is not supported")
+                raise(SocketIO::WebSocket::Error, "received ping, which is not supported")
               when OPCODE_PONG
               else
-                raise(WebSocket::Error, "received unknown opcode: %d" % opcode)
+                raise(SocketIO::WebSocket::Error, "received unknown opcode: %d" % opcode)
             end
           rescue EOFError
             return nil
@@ -254,7 +255,7 @@ class WebSocket
       if @header[name]
         return @header[name]
       else
-        raise(WebSocket::Error, "%s header is missing" % name)
+        raise(SocketIO::WebSocket::Error, "%s header is missing" % name)
       end
     end
 
@@ -295,16 +296,16 @@ class WebSocket
         line = line.chomp()
         break if line.empty?
         if !(line =~ /\A(\S+): (.*)\z/n)
-          raise(WebSocket::Error, "invalid request: #{line}")
+          raise(SocketIO::WebSocket::Error, "invalid request: #{line}")
         end
         @header[$1] = $2
         @header[$1.downcase()] = $2
       end
       if !(@header["upgrade"] =~ /\AWebSocket\z/i)
-        raise(WebSocket::Error, "invalid Upgrade: " + @header["upgrade"])
+        raise(SocketIO::WebSocket::Error, "invalid Upgrade: " + @header["upgrade"])
       end
       if !(@header["connection"] =~ /\AUpgrade\z/i)
-        raise(WebSocket::Error, "invalid Connection: " + @header["connection"])
+        raise(SocketIO::WebSocket::Error, "invalid Connection: " + @header["connection"])
       end
     end
 
@@ -334,13 +335,13 @@ class WebSocket
 
     def gets(rs = $/)
       line = @socket.gets(rs)
-      $stderr.printf("recv> %p\n", line) if WebSocket.debug
+      $stderr.printf("recv> %p\n", line) if SocketIO::WebSocket.debug
       return line
     end
 
     def read(num_bytes)
       str = @socket.read(num_bytes)
-      $stderr.printf("recv> %p\n", str) if WebSocket.debug
+      $stderr.printf("recv> %p\n", str) if SocketIO::WebSocket.debug
       if str && str.bytesize == num_bytes
         return str
       else
@@ -349,7 +350,7 @@ class WebSocket
     end
 
     def write(data)
-      if WebSocket.debug
+      if SocketIO::WebSocket.debug
         data.scan(/\G(.*?(\n|\z))/n) do
           $stderr.printf("send> %p\n", $&) if !$&.empty?
         end
@@ -426,4 +427,5 @@ class WebSocket
       return ssl_socket
     end
 
+  end
 end

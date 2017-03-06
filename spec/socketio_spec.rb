@@ -1,3 +1,5 @@
+require 'socket_io'
+
 describe SocketIO do
   
   before :all do

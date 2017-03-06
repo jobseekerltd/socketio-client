@@ -1,4 +1,4 @@
-require 'socketIO'
+require 'socket_io'
 
 client = SocketIO.connect("localhost") do
   before_start do
