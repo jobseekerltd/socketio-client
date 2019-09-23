@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-
 describe Parser do
   it 'should be able to decode all valid messages' do
     Parser.decode('0').should == { type: '0' }

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-
 RSpec.describe SocketIO do
   let(:client) do
     SocketIO.connect('http://localhost', sync: true)
