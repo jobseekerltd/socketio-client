@@ -2,7 +2,7 @@
 
 echo_server = fork do
   puts `pwd`
-  # exec ""
+  # exec ''
 end
 puts "pid ??? #{echo_server}"
 Process.detach(echo_server)

@@ -1,7 +1,6 @@
 var io = require('socket.io').listen(80);
 
 io.sockets.on('connection', function(socket) {
-
   socket.on('message', function(msg) {
     socket.send(msg)
   })
@@ -13,5 +12,4 @@ io.sockets.on('connection', function(socket) {
   socket.on('dc', function() {
   	socket.close()
   })
-
 });
