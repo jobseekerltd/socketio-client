@@ -20,5 +20,5 @@ Gem::Specification.new do |s|
   # specify any dependencies here; for example:
   # s.add_development_dependency "rspec"
   s.add_dependency 'rest-client', '>= 1.8.0'
-  s.add_dependency 'byebug'
+  s.add_development_dependency 'byebug'
 end
