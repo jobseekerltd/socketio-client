@@ -3,7 +3,7 @@ $:.push File.expand_path("../lib", __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = "socketio-client"
-  s.version     = "0.1.0"
+  s.version     = "0.1.1"
   s.authors     = ["Lyon"]
   s.email       = ["lyon@delorum.com"]
   s.homepage    = "http://github.com/lyondhill/socket.io-ruby-client"

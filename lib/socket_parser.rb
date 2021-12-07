@@ -1,4 +1,4 @@
-module Parser
+module SocketParser
   @regexp = /([^:]+):([0-9]+)?(\+)?:([^:]+)?:?([\s\S]*)?/
 
   # returns hash as {type: '1', id: '1', end_point: '4', data: [{key: value}]}
