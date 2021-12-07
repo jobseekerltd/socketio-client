@@ -1,7 +1,7 @@
 require 'socket_io/web_socket'
 require 'rest_client'
 require 'json'
-require 'parser'
+require 'socket_parser'
 
 module SocketIO
 
@@ -65,7 +65,7 @@ module SocketIO
     def start_recieve_loop
       @thread = Thread.new() do
         while data = @transport.receive()
-          decoded = Parser.decode(data)
+          decoded = SocketParser.decode(data)
           case decoded[:type]
           when '0'
             @on_disconnect.call if @on_disconnect
